@@ -1,0 +1,159 @@
+openapi: 3.0.0
+info:
+  title: {{title}}
+  description: {{description}}
+  contact:
+    name: {{contact_name}}
+    email: {{contact_email}}
+    url:  {{contact_website}}
+  version: {{version}}
+
+servers:
+- url: /
+
+
+security:
+- basicAuth: []
+
+
+tags:
+- name: Health
+- name: Prediction
+- name: Learning
+
+
+paths:
+  /ping:
+    get:
+      summary: Check the API health
+      security: []
+      tags: [Health]
+      operationId: wine_predictor_api.services.healthcheck.ping
+      responses:
+        '200':
+          description: API is up and running
+
+  /wine/quality:
+    get:
+      summary: Estimate the quality of a wine based on several preselected features
+      tags: [Prediction]
+      operationId: wine_predictor_api.services.predictor.estimate_wine_quality
+      parameters:
+        - name: fixed_acidity
+          description: Nonvolatile, volatile acids of Wine. Value should be between 4.6 to 15.9
+          in: query
+          required: True
+          schema:
+            type: number
+            format: float
+            minimum: 4.6
+            maximum: 15.9
+        - name: volatile_acidity
+          in: query
+          description: The amount of acetic acide in wine. Value should be between 0.12 to 1.58
+          schema:
+            type: number
+            format: float
+            minimum: 0.12
+            maximum: 1.58
+        - name: citric_acid
+          in: query
+          description: Adds flavors to wine and is found in small quantity. Value should be between 0.0 to 1.0
+          schema:
+            type: number
+            format: float
+            minimum: 0.0
+            maximum: 1.0
+        - name: residual_sugar
+          in: query
+          description: Sugar content after fermentation stops. Value should be between 0.9 to 15.5
+          schema:
+            type: number
+            format: float
+            minimum: 0.9
+            maximum: 15.5
+        - name: chlorides
+          in: query
+          description: Residual Salt in the wine. Value should be between 0.012 to 0.611
+          schema:
+            type: number
+            format: float
+            minimum: 0.012
+            maximum: 0.611
+        - name: free_sulfur_dioxide
+          in: query
+          description: The free form of SO2 exists in equilibrium between molecular SO2 and bisulfite ion. Value should be between 1.0 to 72.0
+          schema:
+            type: number
+            format: float
+            minimum: 1.0
+            maximum: 72.0
+        - name: total_sulfur_dioxide
+          in: query
+          description: Amount of free and bound forms of SO2. Value should be between 6.0 to 289.0
+          schema:
+            type: number
+            format: float
+            minimum: 6.0
+            maximum: 289.0
+        - name: density
+          in: query
+          description: The density of a substance is its mass per unit volume. Value should be between 0.99007 to 1.00368
+          schema:
+            type: number
+            format: float
+            minimum: 0.99007
+            maximum: 1.00368
+        - name: ph
+          in: query
+          description: Describes how acidic or basic a substance is. Value should be between 2.74 to 4.01
+          schema:
+            type: number
+            format: float
+            minimum: 2.74
+            maximum: 4.01
+        - name: sulphates
+          in: query
+          description: A wine additive that can contribute to sulfur dioxide gas (SO2) levels. Value should be between 0.33 to 2.0
+          schema:
+            type: number
+            format: float
+            minimum: 0.33
+            maximum: 2.0
+        - name: alcohol
+          in: query
+          description: Percentage of alcohol content in the wine.  Value should be between 8.4 to 14.9
+          schema:
+            type: number
+            format: float
+            minimum: 8.4
+            maximum: 14.9
+      responses:
+        '200':
+          description: Wine quality successfully estimated
+        '404':
+          description: Model path is not found
+        '500':
+          description: Internal server error
+
+  /wine/model:
+    patch:
+      summary: (Re)train the wine quality model based on a predifined dataset
+      tags: [Learning]
+      operationId: wine_predictor_api.services.learner.train_model
+      responses:
+        '200':
+          description: New model has been successfully trained but discarded
+        '201':
+          description: New model has been successfully trained and saved as default
+        '404':
+          description: Model path is not found
+        '500':
+          description: Internal server error
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      x-basicInfoFunc: wine_predictor_api.security.authentication.basic_auth
